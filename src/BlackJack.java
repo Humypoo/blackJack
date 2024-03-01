@@ -7,7 +7,6 @@ public class BlackJack {
     private ArrayList<Card> player;
     private ArrayList<Card> dealer;
     private Scanner kb;
-    private int playerValue;
     public BlackJack(){
         deck = new Deck();
         player = new ArrayList<>();
@@ -22,8 +21,11 @@ public class BlackJack {
     private void run(){
         deck.shuffle();
         dealHands();
-        playerTurn();
-        dealerTurn();
+        int playerVal = playerTurn();
+        int dealerVal = dealerTurn(playerVal);
+
+        winOrLose(playerVal,dealerVal);
+
     }
 
     private void dealHands() {
@@ -36,7 +38,7 @@ public class BlackJack {
         System.out.println("Player Hand: \t" + player.get(0) + " " + player.get(1));
     }
 
-    private void playerTurn(){
+    private int playerTurn(){
         System.out.println();
         boolean turnEnd = false;
         String playerCards;
@@ -52,16 +54,17 @@ public class BlackJack {
             for(int i = 0; i < player.size(); i++){
                 playerCards += " " + player.get(i);
             }
-            if (calcBust()){
+            if (calcPlayerVal() > 21){
                 turnEnd = true;
             }
-            System.out.println("Player Cards:" + playerCards);
+            System.out.println("Player Hand:" + playerCards);
             System.out.println();
         }
+        return calcPlayerVal();
     }
 
-    private boolean calcBust(){
-        playerValue = 0;
+    private int calcPlayerVal(){
+        int playerValue = 0;
         int numOfAces= 0;
         boolean bust = false;
         for(int i = 0; i < player.size();i++){
@@ -81,27 +84,62 @@ public class BlackJack {
                 bust = false;
             }
         }
-        return(bust);
+        return(playerValue);
     }
 
-    private int dealerTurn(){
-        int dealerValue;
-        if(!calcBust()){
-            dealerValue = 0;
-            for(int i = 0; i < dealer.size();i++){
-                Card tempCard = dealer.get(i);
-                dealerValue += tempCard.getValue();
+    private int calcDealerVal(){
+        int dealerValue = 0;
+        int numOfAces= 0;
+        boolean bust = false;
+        for(int i = 0; i < dealer.size();i++){
+            Card tempCard = dealer.get(i);
+            if (tempCard.getNumber() == 1){
+                numOfAces++;
             }
-            while(dealerValue < playerValue || dealerValue < 21){
+            dealerValue += tempCard.getValue();
+        }
+        if(dealerValue > 21){
+            bust = true;
+        }
+        while(bust == true && numOfAces > 0){
+            dealerValue -= 10;
+            numOfAces --;
+            if (dealerValue <= 21) {
+                bust = false;
+            }
+        }
+        return(dealerValue);
+    }
+
+    private int dealerTurn(int playerVal){
+        int dealerValue = calcDealerVal();
+        String dealerCards = " " + dealer.get(0) + " " + dealer.get(1);
+        System.out.println("Dealer Hand:" + dealerCards);
+        if(playerVal < 21){
+            while(dealerValue < playerVal || dealerValue < 21){
+                dealerCards = " ";
                 dealer.add(deck.getCard());
-                dealerValue = 0;
-                for(int i = 0; i < dealer.size();i++){
-                    Card tempCard = dealer.get(i);
-                    dealerValue += tempCard.getValue();
+                dealerValue = calcDealerVal();
+                for(int i = 0; i < dealer.size(); i++){
+                    dealerCards += " " + dealer.get(i);
                 }
             }
         }
+        System.out.println();
+        System.out.println("Dealer Hand:" + dealerCards);
+        return dealerValue;
+    }
 
+    private void winOrLose(int playerVal, int dealerVal){
+        if (playerVal > 21){
+            System.out.println("BUST!");
+        } else if (playerVal == dealerVal){
+            System.out.println("PUSH!");
+        } else if (dealerVal > 21 || dealerVal < playerVal){
+            System.out.println("WIN!");
+        } else if (playerVal < dealerVal) {
+            System.out.println("LOSE!");
+        }
     }
 
 }
