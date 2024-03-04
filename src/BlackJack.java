@@ -23,7 +23,6 @@ public class BlackJack {
         dealHands();
         int playerVal = playerTurn();
         int dealerVal = dealerTurn(playerVal);
-
         winOrLose(playerVal,dealerVal);
 
     }
