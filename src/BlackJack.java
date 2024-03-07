@@ -3,30 +3,50 @@ import java.util.Scanner;
 
 public class BlackJack {
 
-    private Deck deck;
+    private static Deck deck;
     private ArrayList<Card> player;
     private ArrayList<Card> dealer;
+    private int bank;
+    private static boolean gameEnd;
     private Scanner kb;
+    private int betValue;
     public BlackJack(){
         deck = new Deck();
         player = new ArrayList<>();
         dealer = new ArrayList<>();
         kb = new Scanner(System.in);
+        bank = 2000;
+        gameEnd = false;
     }
     public static void main(String[] args) {
         BlackJack game = new BlackJack();
-        game.run();
+        while (!gameEnd) {
+            if (deck.getSize() < 4) {
+                System.out.println("Deck has run out of cards.");
+                System.out.println("Shuffling...");
+                System.out.println();
+                deck.newDeck();
+            } else {
+                gameEnd = game.run();
+            }
+        }
+        System.out.println("You have no more coins");
     }
 
-    private void run(){
+    private boolean run(){
+        playerBet();
         deck.shuffle();
         dealHands();
         int playerVal = playerTurn();
         int dealerVal = dealerTurn(playerVal);
         winOrLose(playerVal,dealerVal);
-
+        clearHands();
+        if (bank <= 0){
+            return true;
+        }
+        return false;
     }
-
+    //Method to DealHands
     private void dealHands() {
         player.add(deck.getCard());
         dealer.add(deck.getCard());
@@ -37,13 +57,30 @@ public class BlackJack {
         System.out.println("Player Hand: \t" + player.get(0) + " " + player.get(1));
     }
 
+    private void playerBet(){
+        boolean validResponse = false;
+        System.out.println("How much coins do you want to bet?");
+        System.out.println("Bank: " + bank);
+        while (!validResponse){
+            betValue = kb.nextInt();
+            if (betValue > bank) {
+                System.out.println("You don't have that much coins");
+                System.out.println("Please choose a valid amount");
+            } else {
+                validResponse = true;
+            }
+        }
+        kb.nextLine();
+        System.out.println();
+    }
     private int playerTurn(){
         System.out.println();
         boolean turnEnd = false;
         String playerCards;
+        String response = "";
         while (!turnEnd) {
             System.out.println("[hit/stay]");
-            String response = kb.nextLine();
+            response = kb.nextLine();
             playerCards = " ";
             if (response.equals("hit")) {
                 player.add(deck.getCard());
@@ -115,7 +152,7 @@ public class BlackJack {
         String dealerCards = " " + dealer.get(0) + " " + dealer.get(1);
         System.out.println("Dealer Hand:" + dealerCards);
         if(playerVal < 21){
-            while(dealerValue < playerVal || dealerValue < 21){
+            while(dealerValue < playerVal && dealerValue < 21){
                 dealerCards = " ";
                 dealer.add(deck.getCard());
                 dealerValue = calcDealerVal();
@@ -132,13 +169,20 @@ public class BlackJack {
     private void winOrLose(int playerVal, int dealerVal){
         if (playerVal > 21){
             System.out.println("BUST!");
+            bank -= betValue;
         } else if (playerVal == dealerVal){
             System.out.println("PUSH!");
         } else if (dealerVal > 21 || dealerVal < playerVal){
             System.out.println("WIN!");
+            bank += betValue;
         } else if (playerVal < dealerVal) {
             System.out.println("LOSE!");
+            bank -= betValue;
         }
     }
 
+    private void clearHands(){
+        player.clear();
+        dealer.clear();
+    }
 }

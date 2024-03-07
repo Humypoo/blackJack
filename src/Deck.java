@@ -21,6 +21,20 @@ public class Deck {
         Collections.shuffle(deck);
     }
 
+    public void newDeck(){
+        deck.clear();
+        for(int suit = 0; suit <= 3; suit ++){
+            for(int number = 1; number <= 13; number++){
+                Card tempCard = new Card(number,suit);
+                tempCard.setValue(setInitialValues(number));
+                deck.add(tempCard);
+            }
+        }
+    }
+    public int getSize(){
+        return deck.size();
+    }
+
     public Card getCard(){
         if(!deck.isEmpty()) {
             return deck.remove(deck.size() - 1);
